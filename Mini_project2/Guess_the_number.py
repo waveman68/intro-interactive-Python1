@@ -18,6 +18,7 @@ def new_game(high):
     global guessInt
     global secret_number
     global limit
+    global numberGuesses
 
     guessInt = 0                                # initialize
     secret_number = random.randrange(0, high)
@@ -43,7 +44,6 @@ def range100():
     return
 
 
-
 def range1000():
     # button that changes the range to [0,1000) and starts a new game
 
@@ -51,18 +51,23 @@ def range1000():
 
     return
 
+
 def input_guess(guess):
     # main game logic goes here
     global guessInt
     global secret_number
+    global limit
+    global numberGuesses
     guessInt = int(guess)
     print('Guess was %d' % guessInt)
 
+    numberGuesses += 1
     difference = secret_number - guessInt
 
     if difference == 0:
         print('Correct')
         new_game(100)
+        return  # remainder of logic unnecessary
     elif difference > 0:
         print('Higher')
     elif difference < 0:
@@ -70,7 +75,10 @@ def input_guess(guess):
     else:
         print('error')
 
-    return guessInt
+    if numberGuesses > limit:  # > because after increment
+        print('You no guesses left. You lose.' % limit)
+
+    return
 
 
 # ================== 5 Create frame =============================
