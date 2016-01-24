@@ -62,6 +62,7 @@ def input_guess(guess):
 
     if difference == 0:
         print('Correct')
+        new_game(100)
     elif difference > 0:
         print('Higher')
     elif difference < 0:
@@ -90,24 +91,26 @@ button2 = frame.add_button('Range is [0,1000)', range1000, 100)
 new_game(100)                               # first game always with 100
 
 # ================== 8 Testing =================================
-secret_number = 74
-input_guess("50")
-input_guess("75")
-input_guess("62")
-input_guess("68")
-input_guess("71")
-input_guess("73")
-input_guess("74")
 
-range1000()
-secret_number = 373
-input_guess("500")
-input_guess("250")
-input_guess("313")
-input_guess("344")
-input_guess("359")
-input_guess("367")
-input_guess("371")
+# secret_number = 74
+# input_guess("50")
+# input_guess("75")
+# input_guess("62")
+# input_guess("68")
+# input_guess("71")
+# input_guess("73")
+# input_guess("74")
+#
+# range1000()
+# secret_number = 373
+# input_guess("500")
+# input_guess("250")
+# input_guess("313")
+# input_guess("344")
+# input_guess("359")
+# input_guess("367")
+# input_guess("371")
 
 
 # always remember to check your completed program against the grading rubric
+
