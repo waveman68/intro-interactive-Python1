@@ -167,7 +167,7 @@ input_guess("373")
 
 # 2 pts — Game restricts player to finite number of guesses and terminates the
 #         game when guesses exhausted. 1 pt if number of remaining guesses
-#         is printed, but  game does not terminate correctly.
+#         is printed, but  game does not terminate correctly: CHECKED.
 
 # 1 pt — Game varies number of guesses based on the range of the secret number —
-#        seven guesses for [0, 100), ten guesses for [0, 1000).
+#        seven guesses for [0, 100), ten guesses for [0, 1000): CHECKED.
