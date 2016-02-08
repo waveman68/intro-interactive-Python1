@@ -5,30 +5,46 @@ import simplegui
 
 # global state
 
-result = 1
+result = 0
 iteration = 0
-max_iterations = 10
 
 # helper functions
 
 def init(start):
-    """Initializes n."""
-    global n
-    n = start
-    print "Input is", n
+    """
+    Initializes global parameter n
+    :param start:
+    """
+    global result
+    result = start
+    print
+    "Input is", result
 
 def get_next(current):
-    """???  Part of mystery computation."""
-    return 0.5 * (current + n / current)
+    """
+    Calculation for Collatz conjecture
+    :param current: int
+    :return: int
+    """
+    print(current)
+    if current % 2 == 0:
+        return_value = current / 2
+    elif current % 2 == 1:
+        return_value = current * 3 + 1
+    else:
+        return_value = None
+    return return_value
 
 # timer callback
 
 def update():
-    """???  Part of mystery computation."""
+    """
+    Timer update function to iterate Collatz conjecture
+    """
     global iteration, result
     iteration += 1
-    # Stop iterating after max_iterations
-    if iteration >= max_iterations:
+    # Stop iterating if result is 1
+    if result == 1:
         timer.stop()
         print "Output is", result
     else:
@@ -39,5 +55,5 @@ def update():
 timer = simplegui.create_timer(1, update)
 
 # start program
-init(13)
+init(23)
 timer.start()
