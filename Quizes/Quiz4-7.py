@@ -1,44 +1,44 @@
-# Mystery computation in Python
-# Takes input n and computes output named result
-# Square root is what it does
+__author__ = 'Sam Broderick'
 
 import simplegui
 
-# global state
+# Initialize globals
+WIDTH = 300
+HEIGHT = 200
 
-result = 1
-iteration = 0
-max_iterations = 10
+point_pos = [10, 20]
+vel = [3, 0.7]
 
-# helper functions
 
-def init(start):
-    """Initializes n."""
-    global n
-    n = start
-    print "Input is", n
+# define event handlers
+def draw(canvas):
+    canvas.draw_circle(point_pos, 2, 1, "Red")
+    # Update ball position
+    point_pos[0] += vel[0]
+    point_pos[1] += vel[1]
 
-def get_next(current):
-    """???  Part of mystery computation."""
-    return 0.5 * (current + n / current)
+    canvas.draw_polygon([(50, 50), (180, 50), (180, 140), (50, 150)], 5, 'Blue', 'White')
 
-# timer callback
 
-def update():
-    """???  Part of mystery computation."""
-    global iteration, result
-    iteration += 1
-    # Stop iterating after max_iterations
-    if iteration >= max_iterations:
-        timer.stop()
-        print "Output is", result
-    else:
-        result = get_next(result)
+# def keydown(key):
+#     acc = 1
+#     if key==simplegui.KEY_MAP["left"]:
+#         vel[0] -= acc
+#     elif key==simplegui.KEY_MAP["right"]:
+#         vel[0] += acc
+#     elif key==simplegui.KEY_MAP["down"]:
+#         vel[1] += acc
+#     elif key==simplegui.KEY_MAP["up"]:
+#         vel[1] -= acc
+#
+#     print point_pos
+
+# create frame
+frame = simplegui.create_frame("Velocity ball control", WIDTH, HEIGHT)
 
 # register event handlers
+frame.set_draw_handler(draw)
+# frame.set_keydown_handler(keydown)
 
-timer = simplegui.create_timer(1, update)
-
-# start program
-init(13)
-timer.start()
+# start frame
+frame.start()
