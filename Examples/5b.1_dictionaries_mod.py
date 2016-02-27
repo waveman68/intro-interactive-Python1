@@ -1,10 +1,29 @@
 # Cipher
 
-import simplegui
+import random
+import string
 
-CIPHER = {'a': 'x', 'b': 'c', 'c': 'r', 'd': 'm', 'e': 'l'}
+try:
+    import simplegui
+
+    SIMPLEGUICS2PYGAME = False
+except ImportError:
+    import SimpleGUICS2Pygame.simpleguics2pygame as simplegui
+
+    SIMPLEGUICS2PYGAME = True
+
+CIPHER = {}
+
+LETTERS = string.ascii_lowercase
 
 message = ""
+
+
+def init():
+    letter_list = list(LETTERS)
+    random.shuffle(letter_list)
+    for ch in LETTERS:
+        CIPHER[ch] = letter_list.pop()
 
 
 # Encode button
