@@ -48,8 +48,7 @@ class Card:
         else:
             self.suit = None
             self.rank = None
-            print
-            "Invalid card: ", suit, rank
+            print("Invalid card: ", suit, rank)
 
     def __str__(self):
         return self.suit + self.rank
@@ -63,68 +62,133 @@ class Card:
     def draw(self, canvas, pos):
         card_loc = (CARD_CENTER[0] + CARD_SIZE[0] * RANKS.index(self.rank),
                     CARD_CENTER[1] + CARD_SIZE[1] * SUITS.index(self.suit))
-        canvas.draw_image(card_images, card_loc, CARD_SIZE, [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]],
+        canvas.draw_image(card_images, card_loc, CARD_SIZE,
+                          [pos[0] + CARD_CENTER[0], pos[1] + CARD_CENTER[1]],
                           CARD_SIZE)
 
 
 # define hand class
 class Hand:
     def __init__(self):
-        pass  # create Hand object
+        self.cards = []  # create Hand object
 
     def __str__(self):
-        pass  # return a string representation of a hand
+        return_string = 'Hand contains '
+        for i in range(len(self.cards)):
+            my_card = self.cards[i]
+            return_string += str(my_card) + ' '
+        # return a string representation of a hand
+        return return_string
 
     def add_card(self, card):
-        pass  # add a card object to a hand
+        self.cards.append(card)  # add a card object to a hand
 
     def get_value(self):
-        # count aces as 1, if the hand has an ace, then add 10 to hand value if it doesn't bust
-        pass  # compute the value of the hand, see Blackjack video
+        # count aces as 1, if the hand has an ace, then add 10 to hand value
+        # if it doesn't bust
+        value_list = []
+        for a_card in self.cards:
+            value = VALUES[a_card.get_rank()]
+            value_list.append(value)
+
+        # compute the value of the hand, see Blackjack video
+        value = sum(value_list)
+        if 1 in value_list and value + 10 <= 21:
+            return value + 10
+        else:
+            return value
 
     def draw(self, canvas, pos):
         pass  # draw a hand on the canvas, use the draw method for cards
 
 
-# define deck class 
+# define deck class
 class Deck:
     def __init__(self):
+        self.card_deck = []
+        for a_suit in SUITS:
+            for a_rank in RANKS:
+                self.card_deck.append(Card(a_suit, a_rank))
         pass  # create a Deck object
 
+    def __str__(self):
+        return_string = 'Deck contains '
+        for i in range(len(self.card_deck)):
+            my_card = self.card_deck[i]
+            return_string += str(my_card) + ' '
+        # return a string representation of a hand
+        return return_string
+
     def shuffle(self):
-        # shuffle the deck 
-        pass  # use random.shuffle()
+        random.shuffle(self.card_deck)
 
     def deal_card(self):
-        pass  # deal a card object from the deck
-
-    def __str__(self):
-        pass  # return a string representing the deck
+        return self.card_deck.pop(-1)  # deal a card object from the deck
 
 
 # define event handlers for buttons
 def deal():
     global outcome, in_play
+    global player_hand, dealer_hand, current_deck
 
-    # your code goes here
+    current_deck = Deck()
+    current_deck.shuffle()
+
+    player_hand = Hand()
+    dealer_hand = Hand()
+
+    for i in range(0, 2):
+        player_hand.add_card(current_deck.deal_card())
+        dealer_hand.add_card(current_deck.deal_card())
+
+    player_msg = 'Player hand is: ' + str(player_hand)
+    dealer_msg = 'Dealer hand is: ' + str(dealer_hand)
+    print(player_msg)
+    print(dealer_msg)
 
     in_play = True
 
 
 def hit():
-    pass  # replace with your code below
+    global player_hand, current_deck, in_play
 
     # if the hand is in play, hit the player
+    if in_play and player_hand.get_value() <= 21:
+        player_hand.add_card(current_deck.deal_card())
 
     # if busted, assign a message to outcome, update in_play and score
+    if player_hand.get_value() > 21:
+        print('You have busted.')
+        in_play = False
+    else:
+        player_msg = 'Player hand is: ' + str(player_hand)
+        print(player_msg)
 
 
 def stand():
-    pass  # replace with your code below
+    global dealer_hand, player_hand, current_deck
 
+    player_value = player_hand.get_value()
+    print(player_value)
     # if hand is in play, repeatedly hit dealer until his hand has value 17 or more
+    if in_play:
+        while dealer_hand.get_value() < 17:
+            dealer_hand.add_card(current_deck.deal_card())
+    dealer_value = dealer_hand.get_value()
+    print(dealer_value)
+
+    dealer_msg = 'Dealer hand is: ' + str(dealer_hand)
+    print(dealer_msg)
 
     # assign a message to outcome, update in_play and score
+    if player_value > 21:
+        print('You have busted, the dealer wins')
+    elif player_value <= dealer_value:
+        print('Dealer wins.')
+    elif dealer_value > 21:
+        print('The dealer has busted, the player wins')
+    else:
+        print('The player wins.')
 
 
 # draw handler

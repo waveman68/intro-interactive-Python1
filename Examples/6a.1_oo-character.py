@@ -16,17 +16,12 @@ class Character:
     def get_health(self):
         return self.health
 
-
 def example():
     me = Character("Bob", 20)
-    print
-    str(me)
+    print(str(me))
     me.grab("pencil")
     me.grab("paper")
-    print
-    str(me)
-    print
-    "Health:", me.get_health()
-
+    print(str(me))
+    print("Health:", me.get_health())
 
 example()
