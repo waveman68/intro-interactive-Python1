@@ -73,10 +73,10 @@ class Hand:
         self.cards = []  # create Hand object
 
     def __str__(self):
-        return_string = 'Hand contains '
+        return_string = 'Hand contains'
         for i in range(len(self.cards)):
             my_card = self.cards[i]
-            return_string += str(my_card) + ' '
+            return_string += ' ' + str(my_card)
         # return a string representation of a hand
         return return_string
 
@@ -112,10 +112,10 @@ class Deck:
         pass  # create a Deck object
 
     def __str__(self):
-        return_string = 'Deck contains '
+        return_string = 'Deck contains'
         for i in range(len(self.card_deck)):
             my_card = self.card_deck[i]
-            return_string += str(my_card) + ' '
+            return_string += ' ' + str(my_card)
         # return a string representation of a hand
         return return_string
 
@@ -141,8 +141,11 @@ def deal():
         player_hand.add_card(current_deck.deal_card())
         dealer_hand.add_card(current_deck.deal_card())
 
-    player_msg = 'Player hand is: ' + str(player_hand)
-    dealer_msg = 'Dealer hand is: ' + str(dealer_hand)
+    player_msg = 'Player-' + str(player_hand)
+    dealer_list = str(dealer_hand).split(' ')
+    assert len(dealer_list) == 4, 'Dealer hand error, debug.'
+    dealer_msg = 'Dealer-' + str(dealer_list[0]) + ' ' + \
+                 str(dealer_list[1]) + ' XX ' + str(dealer_list[-1])
     print(player_msg)
     print(dealer_msg)
 
@@ -157,38 +160,38 @@ def hit():
         player_hand.add_card(current_deck.deal_card())
 
     # if busted, assign a message to outcome, update in_play and score
+    player_msg = 'Player-' + str(player_hand)
+    print(player_msg)
     if player_hand.get_value() > 21:
         print('You have busted.')
         in_play = False
-    else:
-        player_msg = 'Player hand is: ' + str(player_hand)
-        print(player_msg)
+        stand()
 
 
 def stand():
     global dealer_hand, player_hand, current_deck
 
     player_value = player_hand.get_value()
-    print(player_value)
+    print('The player scores ' + str(player_value))
     # if hand is in play, repeatedly hit dealer until his hand has value 17 or more
     if in_play:
         while dealer_hand.get_value() < 17:
             dealer_hand.add_card(current_deck.deal_card())
     dealer_value = dealer_hand.get_value()
-    print(dealer_value)
 
-    dealer_msg = 'Dealer hand is: ' + str(dealer_hand)
-    print(dealer_msg)
+    print('Dealer-' + str(dealer_hand))
+    print('The dealer scores ' + str(dealer_value))
 
     # assign a message to outcome, update in_play and score
     if player_value > 21:
-        print('You have busted, the dealer wins')
+        print('The dealer wins')
     elif player_value <= dealer_value:
         print('Dealer wins.')
     elif dealer_value > 21:
         print('The dealer has busted, the player wins')
     else:
         print('The player wins.')
+    print('--------------------------')
 
 
 # draw handler
