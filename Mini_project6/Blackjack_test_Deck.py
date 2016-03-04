@@ -39,18 +39,18 @@ class Card:
 
 class Deck:
     def __init__(self):
-        self.card_deck = []
+        self.card_deck = []  # create a deck
+
+        # fill the deck
         for a_suit in SUITS:
             for a_rank in RANKS:
                 self.card_deck.append(Card(a_suit, a_rank))
-        pass  # create a Deck object
 
     def __str__(self):
-        return_string = 'Deck contains '
-        for i in range(len(self.card_deck)):
-            my_card = self.card_deck[i]
-            return_string += str(my_card) + ' '
         # return a string representation of a hand
+        return_string = 'Deck contains'
+        for i in range(len(self.card_deck)):
+            return_string += ' ' + str(self.card_deck[i])
         return return_string
 
     def shuffle(self):

@@ -38,25 +38,45 @@ class Card:
 
 class Hand:
     def __init__(self):
-        self.cards = []  # create Hand object
+        # create Hand object with list cards
+        self.cards = []
 
     def __str__(self):
-        return_string = 'Hand contains '
+        return_string = 'Hand contains'
+
+        # iterate through card objects and append card strings
         for i in range(len(self.cards)):
-            my_card = self.cards[i]
-            return_string += str(my_card) + ' '
-        # return a string representation of a hand
+            # prepend space, better for split method
+            return_string += ' ' + str(self.cards[i])
+
+        # return a string representation of the hand
         return return_string
 
     def add_card(self, card):
         self.cards.append(card)  # add a card object to a hand
 
     def get_value(self):
-        # count aces as 1, if the hand has an ace, then add 10 to hand value if it doesn't bust
-        pass  # compute the value of the hand, see Blackjack video
+        # count aces as 1, if the hand has an ace, then add 10 to hand value
+        # if it doesn't bust
+        value_list = []
+        for a_card in self.cards:
+            value = VALUES[a_card.get_rank()]
+            value_list.append(value)
+
+        # compute the value of the hand, see Blackjack video
+        value = sum(value_list)
+        if 1 in value_list and value + 10 <= 21:
+            return value + 10
+        else:
+            return value
 
     def draw(self, canvas, pos):
-        pass  # draw a hand on the canvas, use the draw method for cards
+        # draw a hand on the canvas, use the draw method for cards
+
+        # iterate through card objects and use draw method with 1/4 card space
+        for idx in range(len(self.cards)):
+            self.cards[idx].draw(canvas, [pos[0] + idx * int(1.25 * CARD_SIZE[0]),
+                                          pos[1]])
 
 
 ###################################################

@@ -18,6 +18,7 @@ except ImportError:
 import random
 
 __author__ = 'Sam Broderick'
+# card class and class/function structure from class
 
 # load card sprite - 936x384 - source: jfitz.com
 CARD_SIZE = (72, 96)
@@ -30,7 +31,7 @@ card_back = simplegui.load_image("http://storage.googleapis.com/codeskulptor-ass
 
 # initialize some useful global variables
 in_play = False
-outcome = ""
+outcome = ''
 score = 0
 
 # define globals for cards
@@ -70,14 +71,18 @@ class Card:
 # define hand class
 class Hand:
     def __init__(self):
-        self.cards = []  # create Hand object
+        # create Hand object with list cards
+        self.cards = []
 
     def __str__(self):
         return_string = 'Hand contains'
+
+        # iterate through card objects and append card strings
         for i in range(len(self.cards)):
-            my_card = self.cards[i]
-            return_string += ' ' + str(my_card)
-        # return a string representation of a hand
+            # prepend space, better for split method
+            return_string += ' ' + str(self.cards[i])
+
+        # return a string representation of the hand
         return return_string
 
     def add_card(self, card):
@@ -99,24 +104,30 @@ class Hand:
             return value
 
     def draw(self, canvas, pos):
-        pass  # draw a hand on the canvas, use the draw method for cards
+        # draw a hand on the canvas, use the draw method for cards
+
+        # iterate through card objects and use draw method with 1/4 card space
+        for idx in range(len(self.cards)):
+            self.cards[idx].draw(canvas, [pos[0] + idx * int(1.25 * CARD_SIZE[0]),
+                                          pos[1]])
 
 
 # define deck class
 class Deck:
     def __init__(self):
-        self.card_deck = []
+        self.card_deck = []  # create a deck
+
+        # fill the deck
         for a_suit in SUITS:
             for a_rank in RANKS:
                 self.card_deck.append(Card(a_suit, a_rank))
-        pass  # create a Deck object
 
     def __str__(self):
+        # return a string representation of a hand
         return_string = 'Deck contains'
         for i in range(len(self.card_deck)):
-            my_card = self.card_deck[i]
-            return_string += ' ' + str(my_card)
-        # return a string representation of a hand
+            # prepend space, better for split method
+            return_string += ' ' + str(self.card_deck[i])
         return return_string
 
     def shuffle(self):
@@ -128,10 +139,16 @@ class Deck:
 
 # define event handlers for buttons
 def deal():
-    global outcome, in_play
+    global outcome, in_play, score
     global player_hand, dealer_hand, current_deck
 
-    current_deck = Deck()
+    # if deal interrupts a hand, than player loses
+    if in_play:
+        outcome = 'The dealer wins'
+        score -= 1
+    else:
+        outcome = ''  # clears result
+    current_deck = Deck()  # always a new deck per class
     current_deck.shuffle()
 
     player_hand = Hand()
@@ -141,65 +158,77 @@ def deal():
         player_hand.add_card(current_deck.deal_card())
         dealer_hand.add_card(current_deck.deal_card())
 
-    player_msg = 'Player-' + str(player_hand)
-    dealer_list = str(dealer_hand).split(' ')
-    assert len(dealer_list) == 4, 'Dealer hand error, debug.'
-    dealer_msg = 'Dealer-' + str(dealer_list[0]) + ' ' + \
-                 str(dealer_list[1]) + ' XX ' + str(dealer_list[-1])
-    print(player_msg)
-    print(dealer_msg)
-
     in_play = True
 
 
 def hit():
-    global player_hand, current_deck, in_play
+    global player_hand, current_deck, in_play, outcome, score
 
     # if the hand is in play, hit the player
     if in_play and player_hand.get_value() <= 21:
         player_hand.add_card(current_deck.deal_card())
 
+    outcome = ''
+
     # if busted, assign a message to outcome, update in_play and score
-    player_msg = 'Player-' + str(player_hand)
-    print(player_msg)
     if player_hand.get_value() > 21:
-        print('You have busted.')
         in_play = False
         stand()
+        outcome = 'The dealer wins.'
+        score -= 1
 
 
 def stand():
     global dealer_hand, player_hand, current_deck
+    global in_play, outcome, score
 
     player_value = player_hand.get_value()
-    print('The player scores ' + str(player_value))
     # if hand is in play, repeatedly hit dealer until his hand has value 17 or more
     if in_play:
         while dealer_hand.get_value() < 17:
             dealer_hand.add_card(current_deck.deal_card())
-    dealer_value = dealer_hand.get_value()
+        dealer_value = dealer_hand.get_value()
 
-    print('Dealer-' + str(dealer_hand))
-    print('The dealer scores ' + str(dealer_value))
+        # assign a message to outcome, update in_play and score
+        if player_value > 21:
+            outcome = 'The dealer wins'
+            score -= 1
+        elif player_value <= dealer_value and dealer_value <= 21:
+            outcome = 'The dealer wins.'
+            score -= 1
+        elif dealer_value > 21:
+            outcome = 'The player wins'
+            score += 1
+        else:
+            outcome = 'The player wins.'
+            score += 1
 
-    # assign a message to outcome, update in_play and score
-    if player_value > 21:
-        print('The dealer wins')
-    elif player_value <= dealer_value:
-        print('Dealer wins.')
-    elif dealer_value > 21:
-        print('The dealer has busted, the player wins')
-    else:
-        print('The player wins.')
-    print('--------------------------')
+    in_play = False
 
 
 # draw handler
 def draw(canvas):
-    # test to make sure that card.draw works, replace with your code below
+    global player_hand, dealer_hand, in_play, outcome, score
 
-    card = Card("S", "A")
-    card.draw(canvas, [300, 300])
+    # draw basic text
+    canvas.draw_text('Blackjack', (100, 100), 48, 'Red', 'sans-serif')
+    canvas.draw_text('Score: ' + str(score), (350, 100), 36, 'Black')
+    canvas.draw_text('Dealer', (100, 160), 36, 'Black')
+    canvas.draw_text('Player', (100, 360), 36, 'Black')
+
+    # draw cards
+    dealer_hand.draw(canvas, (100, 200))
+    player_hand.draw(canvas, (100, 400))
+
+    # draw messages and cover dealer's hole card
+    if in_play:
+        canvas.draw_text('Hit or stand?', (300, 360), 36, 'Black')
+        canvas.draw_image(card_back, CARD_BACK_CENTER, CARD_SIZE,
+                          [100 + CARD_BACK_CENTER[0], 200 + CARD_BACK_CENTER[1]],
+                          CARD_BACK_SIZE)
+    else:
+        canvas.draw_text('New deal?', (300, 360), 36, 'Black')
+    canvas.draw_text(outcome, (300, 160), 36, 'Black')
 
 
 # initialization frame
@@ -217,4 +246,54 @@ deal()
 frame.start()
 
 
-# remember to review the gradic rubric
+# remember to review the grading rubric
+
+# The program displays the title "Blackjack" on the canvas.
+# 1 pt - check
+
+# The program displays 3 buttons ("Deal", "Hit" & "Stand") in control area.
+# 1 pt - check
+
+# The program graphically displays the player's hand using card images.
+# (1 pt if text is displayed in the console instead)
+# 2 pts - check
+# The program graphically displays the dealer's hand using card images.
+# Displaying both of the dealer's cards face up is allowable when evaluating
+# this bullet. (1 pt if text displayed in the console instead)
+# 2 pts -  check
+
+# The dealer's hole card is hidden until the current round is over. After
+# the round is over, it is displayed.
+# 1 pt -  check
+
+# Pressing the "Deal" button deals out two cards each to the player and
+# dealer. (1 pt per player)
+# 2 pts - check
+
+# Pressing the "Deal" button in the middle of the round causes the player to
+# lose the current round.
+# 1 pt - check
+
+# Pressing the "Hit" button deals another card to the player.
+# 1 pt - check
+
+# Pressing the "Stand" button deals cards to the dealer as necessary.
+# 1 pt - check
+
+# The program correctly recognizes the player busting.
+# 1 pt - check
+
+# The program correctly recognizes the dealer busting.
+# 1 pt - check
+
+# The program correctly computes hand values and declares a winner. Evaluate
+# based on messages.
+# 1 pt - check
+
+# The program accurately prompts the player for an action with messages
+# similar to "Hit or stand?" and "New deal?". (1 pt per message)
+# 2 pts -  check
+
+# The program implements a scoring system that correctly reflects wins
+# and losses. Please be generous in evaluating this item.
+# 1 pt - check
