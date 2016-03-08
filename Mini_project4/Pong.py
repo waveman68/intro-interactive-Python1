@@ -128,7 +128,7 @@ def draw(canvas):
     if ((ball_at_paddle1 and ball_at_left_gutter) or
             (ball_at_paddle2 and ball_at_right_gutter)):
         # ceil ensures speed-up also for small velocities
-        ball_vel = [-math.ceil(1.1 * x) for x in ball_vel]
+        ball_vel[0] = -math.ceil(1.1 * ball_vel[0])
 
     # draw ball
     canvas.draw_circle(ball_pos, BALL_RADIUS, 2, "Red", "White")

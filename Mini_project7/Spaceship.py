@@ -138,7 +138,10 @@ class Ship:
         Experiment with different positions and angles for the ship.
         """
 
-        canvas.draw_circle(self.pos, self.radius, 1, "White", "White")
+        # use object parameters to draw image
+        canvas.draw_image(self.image, self.image_center,
+                          self.image_size, self.pos, self.image_size,
+                          self.angle)
 
         # TODO: Modify the ship's draw method to draw the thrust image
         """
@@ -154,6 +157,10 @@ class Ship:
         the draw handler, the ship should move in response to different
         initial velocities.
         """
+
+        # iterate through the
+        self.pos = [p + v for p, v in zip(self.pos, self.vel)]
+
         # TODO: Modify the update method for the ship to increment its angle by
         """ its angular velocity."""
 
@@ -265,7 +272,7 @@ def rock_spawner():
 frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
 
 # initialize ship and two sprites
-my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info)
+my_ship = Ship([WIDTH / 2, HEIGHT / 2], [1, 1], 0, ship_image, ship_info)
 a_rock = Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, 0, asteroid_image,
                 asteroid_info)
 a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1, 1], 0, 0,
