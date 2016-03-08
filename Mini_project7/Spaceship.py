@@ -14,7 +14,6 @@ except ImportError:
     import SimpleGUICS2Pygame.codeskulptor_lib as codeskulptor_lib
     import SimpleGUICS2Pygame.simplegui_lib as simplegui_lib
 
-import simplegui
 import math
 import random
 
@@ -130,10 +129,76 @@ class Ship:
         self.radius = info.get_radius()
 
     def draw(self, canvas):
+        # TODO: Modify the draw method for the Ship class to draw
+        """
+        the ship image (without thrust flames) instead of a circle. This method should
+        incorporate the ship's position and angle. Note that the angle should
+        be in radians, not degrees. Since a call to the ship's draw method
+        already exists in the draw handler, you should now see the ship image.
+        Experiment with different positions and angles for the ship.
+        """
+
         canvas.draw_circle(self.pos, self.radius, 1, "White", "White")
 
+        # TODO: Modify the ship's draw method to draw the thrust image
+        """
+        when it is on. (The ship image is tiled and contains both
+        images of the ship.)
+        """
+
     def update(self):
+        # TODO: Implement an initial version of the update method for the ship.
+        """
+        This version should update the position of the ship based on its
+        velocity. Since a call to the update method also already exists in
+        the draw handler, the ship should move in response to different
+        initial velocities.
+        """
+        # TODO: Modify the update method for the ship to increment its angle by
+        """ its angular velocity."""
+
+        # TODO: Add code to the ship's update method to use the given helper
+        """
+        function angle_to_vector to compute the forward vector pointing in
+        the direction the ship is facing based on the ship's angle.
+        """
+
+        # TODO: Next, add code to the ship's update method to accelerate
+        """
+        the ship in the direction of this forward vector when the ship is
+        thrusting. You will need to update the velocity vector by a small
+        fraction of the forward acceleration vector so that the ship does not
+        accelerate too fast.
+        """
+
+        # TODO: Then, modify the ship's update method such that the ship's
+        """
+        position wraps around the screen when it goes off the edge (use
+        modular arithmetic!).
+        """
+
+        # TODO: Up to this point, your ship will never slow down.
+        """
+        Finally, add friction to the ship's update method as shown in the
+        "Acceleration and Friction" video by multiplying each component of
+        the velocity by a number slightly less than 1 during each update.
+        """
         pass
+
+    # TODO: Add methods to the Ship class to increment and decrement
+    """
+    the angular velocity by a fixed amount.
+    (There is some flexibility in how you structure these methods.)
+    """
+
+    # TODO: Add a method to the Ship class to turn the thrusters on/off
+    """
+    (you can make it take a Boolean argument which is True or False to
+    decide if they should be on or off).
+    """
+
+    # TODO: Modify the ship's thrust method to play the thrust sound when the
+    """thrust is on. Rewind the sound when the thrust turns off."""
 
 
 # Sprite class
@@ -193,6 +258,9 @@ def rock_spawner():
     pass
 
 
+# TODO: Call these methods in the keyboard handlers appropriately
+"""and verify that you can turn your ship as you expect."""
+
 # initialize frame
 frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
 
@@ -205,6 +273,11 @@ a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1, 1], 0, 0,
 
 # register handlers
 frame.set_draw_handler(draw)
+
+# TODO: Make your ship turn in response to the left/right arrow keys.
+"""Add keydown and keyup handlers that check the left and right arrow keys."""
+
+# TODO: Modify the keyboard handlers to turn the ship's thrusters on/off.
 
 timer = simplegui.create_timer(1000.0, rock_spawner)
 
