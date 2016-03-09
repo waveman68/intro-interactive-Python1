@@ -358,7 +358,11 @@ def draw(canvas):
     canvas.draw_image(debris_image, center, size,
                       (wtime + WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT))
 
-    canvas.draw_text(str(lives), [10, 40], 24, 'white')
+    canvas.draw_text('Lives', [30, 40], 24, 'White', 'sans-serif')
+    canvas.draw_text(str(lives), [30, 70], 24, 'White', 'sans-serif')
+
+    canvas.draw_text('Score', [WIDTH - 90, 40], 24, 'White', 'sans-serif')
+    canvas.draw_text(str(score), [WIDTH - 90, 70], 24, 'White', 'sans-serif')
 
     # draw ship and sprites
     my_ship.draw(canvas)
@@ -446,7 +450,7 @@ def rock_spawner():
     rock_vel = [random.randrange(-5, 5), random.randrange(-5, 5)]
     # work around CodeSkulptor limitation to produce -Pi to Pi
     ang = random.randrange(-314, 314) / 100
-    ang_vel = random.randrange(-8, 8) / 40
+    ang_vel = random.randrange(-4, 4) / 40
     a_rock = Sprite(rock_pos, rock_vel, ang, ang_vel, asteroid_image,
                     asteroid_info)
 
@@ -544,5 +548,8 @@ frame.start()
 
 # 1 pt - The program draws appropriate text for lives on the upper left
 # portion of the canvas.
+# CHECK
+
 # 1 pt - The program draws appropriate text for score on the upper right
 # portion of the canvas.
+# CHECK
