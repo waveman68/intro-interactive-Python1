@@ -179,7 +179,6 @@ class Ship:
                               self.image_size, self.pos, self.image_size,
                               self.angle)
 
-
     def update(self):
         # TODO: DONE Implement an initial version of the update method for the ship.
         """
@@ -278,8 +277,7 @@ class Ship:
                     self.sound.rewind()  # rewind only after 20 s (workaround)
                 except AttributeError:
                     pass
-        # FIXME
-        # TODO: Modify the ship's thrust method to play the thrust sound when the
+        # TODO: DONE Modify the ship's thrust method to play the thrust sound when the
         """thrust is on. Rewind the sound when the thrust turns off."""
 
     pass
@@ -303,11 +301,22 @@ class Sprite:
             sound.rewind()
             sound.play()
 
+    # TODO: DONE Complete the Sprite class (as shown in the "Sprite class" video)
+    """
+    # by modifying the draw handler to draw the actual image and the update
+    handler to make the sprite move and rotate. Rocks do not accelerate or
+    experience friction, so the sprite update method should be simpler than
+    the ship update method. Test this by giving a_rock different starting
+    parameters and ensuring it behaves as you expect.
+    """
+
     def draw(self, canvas):
-        canvas.draw_circle(self.pos, self.radius, 1, "Red", "Red")
+        canvas.draw_image(self.image, self.image_center, self.image_size,
+                          self.pos, self.image_size, self.angle)
 
     def update(self):
-        pass
+        self.pos = [p + v for p, v in zip(self.pos, self.vel)]
+        self.angle += + self.angle_vel
 
 
 def draw(canvas):
@@ -386,7 +395,27 @@ def keyup(key):
 
 # timer handler that spawns a rock
 def rock_spawner():
-    pass
+    """
+    Function to generate asteroids (rocks)
+    """
+    # TODO: DONE Implement the timer handler rock_spawner.
+    """
+    # In particular, set a_rock to be a new rock on every tick. (Don't
+    forget to declare a_rock as a global in the timer handler.) Choose a
+    velocity, position, and angular velocity randomly for the rock. You will
+    want to tweak the ranges of these random numbers, as that will affect
+    how fun the game is to play. Make sure you generated rocks that spin in
+    both directions and, likewise, move in all directions.
+    """
+    rock_pos = [random.randint(0, WIDTH), random.randint(0, HEIGHT)]
+    # work around CodeSkulptor limitation to produce random fractions
+    # normally would be random.uniform()...
+    rock_vel = [random.randrange(-5, 5), random.randrange(-5, 5)]
+    # work around CodeSkulptor limitation to produce -Pi to Pi
+    ang = random.randrange(-314, 314) / 100
+    ang_vel = random.randrange(-8, 8) / 40
+    return Sprite(rock_pos, rock_vel, ang, ang_vel, asteroid_image,
+                  asteroid_info)
 
 
 # initialize frame
@@ -395,8 +424,9 @@ frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
 # initialize ship and two sprites
 my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info,
                ship_thrust_sound)
-a_rock = Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, 0, asteroid_image,
-                asteroid_info)
+# a_rock = Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, 0, asteroid_image,
+#                 asteroid_info)
+a_rock = rock_spawner()
 a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1, 1], 0, 0,
                    missile_image, missile_info, missile_sound)
 
