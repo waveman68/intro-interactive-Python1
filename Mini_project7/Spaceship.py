@@ -358,6 +358,8 @@ def draw(canvas):
     canvas.draw_image(debris_image, center, size,
                       (wtime + WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT))
 
+    canvas.draw_text(str(lives), [10, 40], 24, 'white')
+
     # draw ship and sprites
     my_ship.draw(canvas)
     a_rock.draw(canvas)
