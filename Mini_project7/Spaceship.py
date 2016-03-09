@@ -27,6 +27,14 @@ time = 0
 
 class ImageInfo:
     def __init__(self, center, size, radius=0, lifespan=None, animated=False):
+        """
+        Class to store image parameters
+        :param center: list of x, y coordinate
+        :param size: list of width, height
+        :param radius:
+        :param lifespan:
+        :param animated:
+        """
         self.center = center
         self.size = size
         self.radius = radius
@@ -93,11 +101,15 @@ explosion_image = simplegui.load_image(
 # sound assets purchased from sounddogs.com, please do not redistribute
 soundtrack = simplegui.load_sound(
     "http://commondatastorage.googleapis.com/codeskulptor-assets/sounddogs/soundtrack.mp3")
+# soundtrack = simplegui.load_sound(
+#     "https://dl.dropboxusercontent.com/u/50460508/thrust4.mp3")
+
 missile_sound = simplegui.load_sound(
     "http://commondatastorage.googleapis.com/codeskulptor-assets/sounddogs/missile.mp3")
 missile_sound.set_volume(.5)
 ship_thrust_sound = simplegui.load_sound(
     "http://commondatastorage.googleapis.com/codeskulptor-assets/sounddogs/thrust.mp3")
+ship_thrust_sound.set_volume(0.5)
 explosion_sound = simplegui.load_sound(
     "http://commondatastorage.googleapis.com/codeskulptor-assets/sounddogs/explosion.mp3")
 
@@ -108,6 +120,11 @@ explosion_sound = simplegui.load_sound(
 
 # helper functions to handle transformations
 def angle_to_vector(ang):
+    """
+    Returns a unit vector as list from an angle
+    :param ang:
+    :return: list
+    """
     return [math.cos(ang), math.sin(ang)]
 
 
@@ -117,19 +134,26 @@ def dist(p, q):
 
 # Ship class
 class Ship:
-    def __init__(self, pos, vel, angle, image, info):
+    def __init__(self, pos, vel, angle, image, info, sound=None):
         self.pos = [pos[0], pos[1]]
         self.vel = [vel[0], vel[1]]
-        self.thrust = False
+        self.thrust = False  # thrusters off
+        self.thrust_vec = [0, 0]  # initialize with no thrust
+        self.thrust_counter = 0  # initialize counter for sound workaround
+        self.acceleration = 0.2  # acceleration when thrusting
         self.angle = angle
         self.angle_vel = 0
+        self.angle_vel_delta = 0.1
         self.image = image
         self.image_center = info.get_center()
         self.image_size = info.get_size()
         self.radius = info.get_radius()
+        self.friction = 0.97
+        if sound:
+            self.sound = sound
 
     def draw(self, canvas):
-        # TODO: Modify the draw method for the Ship class to draw
+        # TODO: DONE Modify the draw method for the Ship class to draw
         """
         the ship image (without thrust flames) instead of a circle. This method should
         incorporate the ship's position and angle. Note that the angle should
@@ -138,19 +162,26 @@ class Ship:
         Experiment with different positions and angles for the ship.
         """
 
-        # use object parameters to draw image
-        canvas.draw_image(self.image, self.image_center,
-                          self.image_size, self.pos, self.image_size,
-                          self.angle)
-
-        # TODO: Modify the ship's draw method to draw the thrust image
+        # TODO: DONE Modify the ship's draw method to draw the thrust image
         """
         when it is on. (The ship image is tiled and contains both
         images of the ship.)
         """
+        # use object parameters to draw image
+        if self.thrust:
+            # shift image center to pick image half with flames
+            canvas.draw_image(self.image,
+                              [self.image_center[0] + 90, self.image_center[1]],
+                              self.image_size, self.pos, self.image_size,
+                              self.angle)
+        elif not self.thrust:  # shift back to image center without flames
+            canvas.draw_image(self.image, self.image_center,
+                              self.image_size, self.pos, self.image_size,
+                              self.angle)
+
 
     def update(self):
-        # TODO: Implement an initial version of the update method for the ship.
+        # TODO: DONE Implement an initial version of the update method for the ship.
         """
         This version should update the position of the ship based on its
         velocity. Since a call to the update method also already exists in
@@ -158,30 +189,42 @@ class Ship:
         initial velocities.
         """
 
-        # iterate through the
-        self.pos = [p + v for p, v in zip(self.pos, self.vel)]
-
-        # TODO: Modify the update method for the ship to increment its angle by
-        """ its angular velocity."""
-
-        # TODO: Add code to the ship's update method to use the given helper
+        # TODO: DONE Then, modify the ship's update method such that the ship's
         """
-        function angle_to_vector to compute the forward vector pointing in
-        the direction the ship is facing based on the ship's angle.
+        position wraps around the screen when it goes off the edge (use
+        modular arithmetic!).
         """
 
-        # TODO: Next, add code to the ship's update method to accelerate
+        # iterate through  position and velocity and sum for updated position
+        # zip # zip is a handy way to iterate over > 1 lists at the same time
+        # the % s wraps the rocket around the screen
+        self.pos = [(p + v) % s for p, v, s in
+                    zip(self.pos, self.vel, [WIDTH, HEIGHT])]
+
+        # TODO: DONE Modify the update method for the ship to increment its
+        """angle by its angular velocity."""
+        self.angle += self.angle_vel
+
+        # TODO: DONE Add code to the ship's update method to use the given
+        """
+        helper function angle_to_vector to compute the forward vector pointing
+        in the direction the ship is facing based on the ship's angle.
+        """
+        if self.thrust:
+            # accelerate along forward direction: define thrust vector
+            self.thrust_vector = [self.acceleration * a_v for a_v in
+                                  angle_to_vector(self.angle)]
+
+            # update the velocity vector change by the thrust vector
+            # zip is a handy way to iterate over > 1 lists at the same time
+            self.vel = [v + a for v, a in zip(self.vel, self.thrust_vector)]
+
+        # TODO: DONE Next, add code to the ship's update method to accelerate
         """
         the ship in the direction of this forward vector when the ship is
         thrusting. You will need to update the velocity vector by a small
         fraction of the forward acceleration vector so that the ship does not
         accelerate too fast.
-        """
-
-        # TODO: Then, modify the ship's update method such that the ship's
-        """
-        position wraps around the screen when it goes off the edge (use
-        modular arithmetic!).
         """
 
         # TODO: Up to this point, your ship will never slow down.
@@ -190,22 +233,56 @@ class Ship:
         "Acceleration and Friction" video by multiplying each component of
         the velocity by a number slightly less than 1 during each update.
         """
-        pass
+        self.vel = [self.friction * v for v in self.vel]
 
-    # TODO: Add methods to the Ship class to increment and decrement
-    """
-    the angular velocity by a fixed amount.
-    (There is some flexibility in how you structure these methods.)
-    """
+        # TODO: DONE Add methods to the Ship class to increment and decrement
+        """
+        the angular velocity by a fixed amount.
+        (There is some flexibility in how you structure these methods.)
+        """
 
-    # TODO: Add a method to the Ship class to turn the thrusters on/off
-    """
-    (you can make it take a Boolean argument which is True or False to
-    decide if they should be on or off).
-    """
+    def turn_cw(self):
+        # updates angular velocity by a constant delta for clockwise
+        self.angle_vel = self.angle_vel_delta
 
-    # TODO: Modify the ship's thrust method to play the thrust sound when the
-    """thrust is on. Rewind the sound when the thrust turns off."""
+    def turn_ccw(self):
+        # updates angular velocity by delta for counter-clockwise
+        self.angle_vel = -self.angle_vel_delta
+
+    def thrusting(self, is_thrusting):
+        """
+        Implements thrusting within Ship class
+        :param is_thrusting: boolean, whether thrusters are on
+        """
+
+        # TODO: DONE Add a method to the Ship class to turn the thrusters on/off
+        """
+        (you can make it take a Boolean argument which is True or False to
+        decide if they should be on or off).
+        """
+        if is_thrusting:
+            self.thrust = True
+            self.thrust_counter += 1  # count how long thrusting
+            try:
+                self.sound.play()
+            except AttributeError:
+                pass
+        else:
+            self.thrust = False
+            try:
+                self.sound.pause()  # pause playing when not thrusting
+            except AttributeError:
+                pass
+            if self.thrust_counter > 20:
+                try:
+                    self.sound.rewind()  # rewind only after 20 s (workaround)
+                except AttributeError:
+                    pass
+        # FIXME
+        # TODO: Modify the ship's thrust method to play the thrust sound when the
+        """thrust is on. Rewind the sound when the thrust turns off."""
+
+    pass
 
 
 # Sprite class
@@ -260,19 +337,64 @@ def draw(canvas):
     a_missile.update()
 
 
+# key handlers
+def keydown(key):
+    """
+    Handler to react to key-down events
+    :param key: key pressed
+    """
+
+    # TODO: The up arrow should control the thrusters of your spaceship.
+    """
+    The thrusters should be on when the up arrow is down and off when it is
+    up.
+    """
+
+    # TODO: DONE Make your ship turn in response to the left/right arrow keys.
+    """Add key-down and key-up handlers that check the left and right arrow keys."""
+
+    if key == simplegui.KEY_MAP["up"]:
+        # True for update logic to use image with flames
+        my_ship.thrusting(True)
+
+    elif key == simplegui.KEY_MAP["left"]:
+        # turn the ship counter-clockwise
+        my_ship.turn_ccw()
+
+    elif key == simplegui.KEY_MAP["right"]:
+        # turn the ship counter-clockwise
+        my_ship.turn_cw()
+
+
+def keyup(key):
+    """
+    Handler to react to key-up events
+    :param key: key pressed
+    """
+
+    # improve readability, use in list vice == 'left' or == 'right'
+    key_list_lr = [simplegui.KEY_MAP["left"], simplegui.KEY_MAP["right"]]
+
+    if key == simplegui.KEY_MAP["up"]:
+        # False for update logic to use image without flames
+        my_ship.thrusting(False)
+
+    elif key in key_list_lr:
+        # release left/right stops turning
+        my_ship.angle_vel = 0
+
+
 # timer handler that spawns a rock
 def rock_spawner():
     pass
 
 
-# TODO: Call these methods in the keyboard handlers appropriately
-"""and verify that you can turn your ship as you expect."""
-
 # initialize frame
 frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
 
 # initialize ship and two sprites
-my_ship = Ship([WIDTH / 2, HEIGHT / 2], [1, 1], 0, ship_image, ship_info)
+my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info,
+               ship_thrust_sound)
 a_rock = Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, 0, asteroid_image,
                 asteroid_info)
 a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1, 1], 0, 0,
@@ -281,8 +403,10 @@ a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1, 1], 0, 0,
 # register handlers
 frame.set_draw_handler(draw)
 
-# TODO: Make your ship turn in response to the left/right arrow keys.
-"""Add keydown and keyup handlers that check the left and right arrow keys."""
+# TODO: DONE Call these methods in the keyboard handlers appropriately
+"""and verify that you can turn your ship as you expect."""
+frame.set_keydown_handler(keydown)
+frame.set_keyup_handler(keyup)
 
 # TODO: Modify the keyboard handlers to turn the ship's thrusters on/off.
 
