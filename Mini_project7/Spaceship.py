@@ -84,9 +84,9 @@ ship_image = simplegui.load_image(
     "http://commondatastorage.googleapis.com/codeskulptor-assets/lathrop/double_ship.png")
 
 # missile image - shot1.png, shot2.png, shot3.png
-missile_info = ImageInfo([5, 5], [10, 10], 3, 50)
+missile_info = ImageInfo([10, 10], [20, 20], 3, 50)
 missile_image = simplegui.load_image(
-    "http://commondatastorage.googleapis.com/codeskulptor-assets/lathrop/shot2.png")
+    "http://commondatastorage.googleapis.com/codeskulptor-assets/lathrop/shot3.png")
 
 # asteroid images - asteroid_blue.png, asteroid_brown.png, asteroid_blend.png
 asteroid_info = ImageInfo([45, 45], [90, 90], 40)
@@ -148,7 +148,7 @@ class Ship:
         self.image_center = info.get_center()
         self.image_size = info.get_size()
         self.radius = info.get_radius()
-        self.friction = 0.97
+        self.friction = 0.98
         if sound:
             self.sound = sound
 
@@ -197,7 +197,7 @@ class Ship:
         # iterate through  position and velocity and sum for updated position
         # zip # zip is a handy way to iterate over > 1 lists at the same time
         # the % s wraps the rocket around the screen
-        self.pos = [(p + v) % s for p, v, s in
+        self.pos = [(p + round(v)) % s for p, v, s in
                     zip(self.pos, self.vel, [WIDTH, HEIGHT])]
 
         # TODO: DONE Modify the update method for the ship to increment its
@@ -211,7 +211,7 @@ class Ship:
         """
         if self.thrust:
             # accelerate along forward direction: define thrust vector
-            self.thrust_vector = [self.acceleration * a_v for a_v in
+            self.thrust_vector = [self.acceleration * round(a_v) for a_v in
                                   angle_to_vector(self.angle)]
 
             # update the velocity vector change by the thrust vector
@@ -280,7 +280,30 @@ class Ship:
         # TODO: DONE Modify the ship's thrust method to play the thrust sound when the
         """thrust is on. Rewind the sound when the thrust turns off."""
 
-    pass
+    # TODO: DONE Add a shoot method to your ship class. This should spawn a new
+    """
+    # missile (for now just replace the old missile in a_missile). The
+    missile's initial position should be the tip of your ship's "cannon".
+    Its velocity should be the sum of the ship's velocity and a multiple of
+    the ship's forward vector.
+    """
+
+    def shoot(self):
+        global a_missile
+        # 40 pixels from ship middle to tip, rotate by angle
+        direction = angle_to_vector(self.angle)
+        missile_pos = [round(40 * d) for d in direction]
+        missile_start = [c + p for c, p in zip(self.pos, missile_pos)]
+
+        missile_speed = 3  # multiplier to determine velocity vector
+        missile_vel = [v + missile_speed * d for v, d in zip(self.vel, direction)]
+
+        # TODO: DONE Make sure that the missile sound is passed to the sprite
+        """
+        initializer so that the shooting sound is played    whenever you shoot a missile.
+        """
+        a_missile = Sprite(missile_start, missile_vel, self.angle, 0,
+                           missile_image, missile_info, missile_sound)
 
 
 # Sprite class
@@ -362,6 +385,9 @@ def keydown(key):
     # TODO: DONE Make your ship turn in response to the left/right arrow keys.
     """Add key-down and key-up handlers that check the left and right arrow keys."""
 
+    # TODO: DONE Modify the keydown handler to call this shoot method when the
+    """space-bar is pressed."""
+
     if key == simplegui.KEY_MAP["up"]:
         # True for update logic to use image with flames
         my_ship.thrusting(True)
@@ -373,6 +399,10 @@ def keydown(key):
     elif key == simplegui.KEY_MAP["right"]:
         # turn the ship counter-clockwise
         my_ship.turn_cw()
+
+    elif key == simplegui.KEY_MAP['space']:
+        # shoot a missile
+        my_ship.shoot()
 
 
 def keyup(key):
@@ -398,6 +428,7 @@ def rock_spawner():
     """
     Function to generate asteroids (rocks)
     """
+    global a_rock
     # TODO: DONE Implement the timer handler rock_spawner.
     """
     # In particular, set a_rock to be a new rock on every tick. (Don't
@@ -414,8 +445,8 @@ def rock_spawner():
     # work around CodeSkulptor limitation to produce -Pi to Pi
     ang = random.randrange(-314, 314) / 100
     ang_vel = random.randrange(-8, 8) / 40
-    return Sprite(rock_pos, rock_vel, ang, ang_vel, asteroid_image,
-                  asteroid_info)
+    a_rock = Sprite(rock_pos, rock_vel, ang, ang_vel, asteroid_image,
+                    asteroid_info)
 
 
 # initialize frame
@@ -424,9 +455,8 @@ frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
 # initialize ship and two sprites
 my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info,
                ship_thrust_sound)
-# a_rock = Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, 0, asteroid_image,
-#                 asteroid_info)
-a_rock = rock_spawner()
+a_rock = Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, 0, asteroid_image,
+                asteroid_info)
 a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1, 1], 0, 0,
                    missile_image, missile_info, missile_sound)
 
@@ -447,32 +477,69 @@ timer.start()
 frame.start()
 
 # 1 pt - The program draws the ship as an image.
+# CHECK
+
 # 1 pt - The ship flies in a straight line when not under thrust.
+# CHECK
+
 # 1 pt - The ship rotates at a constant angular velocity in a counter
 # clockwise direction when the left arrow key is held down.
+# CHECK
+
 # 1 pt - The ship rotates at a constant angular velocity in the clockwise
 # direction when the right arrow key is held down.
+# CHECK
+
 # 1 pt - The ship's orientation is independent of its velocity.
+# CHECK
+
 # 1 pt - The program draws the ship with thrusters on when the up arrow is
 # held down.
+# CHECK
+
 # 1 pt - The program plays the thrust sound only when the up arrow key is
 # held down.
+# CHECK
+
 # 1 pt - The ship accelerates in its forward direction when the thrust key is
 #  held down.
+# CHECK
+
 # 1 pt - The ship's position wraps to the other side of the screen when it
 # crosses the edge of the screen.
+# CHECK
+
 # 1 pt - The ship's velocity slows to zero while the thrust is not being
 # applied.
+# CHECK
+
 # 1 pt - The program draws a rock as an image.
+# CHECK
+
+
 # 1 pt - The rock travels in a straight line at a constant velocity.
+# CHECK
+
 # 1 pt - The rock is respawned once every second by a timer.
+# CHECK
+
 # 1 pt - The rock has a random spawn position, spin direction and velocity.
+# CHECK
+
 # 1 pt - The program spawns a missile when the space bar is pressed.
+# CHECK
+
 # 1 pt - The missile spawns at the tip of the ship's cannon.
+# CHECK
+
 # 1 pt - The missile's velocity is the sum of the ship's velocity and a
 # multiple of its forward vector.
+# CHECK
+
 # 1 pt - The program plays the missile firing sound when the missile is
 # spawned.
+# CHECK
+
 # 1 pt - The program draws appropriate text for lives on the upper left
 # portion of the canvas.
 # 1 pt - The program draws appropriate text for score on the upper right
