@@ -20,6 +20,7 @@ import random
 # globals for user interface
 WIDTH = 800
 HEIGHT = 600
+MAX_ROCK_VEL = 5
 score = 0
 lives = 3
 time = 0
@@ -153,21 +154,11 @@ class Ship:
             self.sound = sound
 
     def draw(self, canvas):
-        # TODO: DONE Modify the draw method for the Ship class to draw
-        """
-        the ship image (without thrust flames) instead of a circle. This method should
-        incorporate the ship's position and angle. Note that the angle should
-        be in radians, not degrees. Since a call to the ship's draw method
-        already exists in the draw handler, you should now see the ship image.
-        Experiment with different positions and angles for the ship.
-        """
-
-        # TODO: DONE Modify the ship's draw method to draw the thrust image
-        """
-        when it is on. (The ship image is tiled and contains both
-        images of the ship.)
-        """
         # use object parameters to draw image
+        """
+        Method to draw the ship with or without flames
+        :param canvas: canvas object
+        """
         if self.thrust:
             # shift image center to pick image half with flames
             canvas.draw_image(self.image,
@@ -180,18 +171,8 @@ class Ship:
                               self.angle)
 
     def update(self):
-        # TODO: DONE Implement an initial version of the update method for the ship.
         """
-        This version should update the position of the ship based on its
-        velocity. Since a call to the update method also already exists in
-        the draw handler, the ship should move in response to different
-        initial velocities.
-        """
-
-        # TODO: DONE Then, modify the ship's update method such that the ship's
-        """
-        position wraps around the screen when it goes off the edge (use
-        modular arithmetic!).
+        Updates object variables associated with position, thrust, velocity
         """
 
         # iterate through  position and velocity and sum for updated position
@@ -200,15 +181,10 @@ class Ship:
         self.pos = [(p + round(v)) % s for p, v, s in
                     zip(self.pos, self.vel, [WIDTH, HEIGHT])]
 
-        # TODO: DONE Modify the update method for the ship to increment its
-        """angle by its angular velocity."""
+        # rotate ship
         self.angle += self.angle_vel
 
-        # TODO: DONE Add code to the ship's update method to use the given
-        """
-        helper function angle_to_vector to compute the forward vector pointing
-        in the direction the ship is facing based on the ship's angle.
-        """
+        # thrust along ship's forward direction
         if self.thrust:
             # accelerate along forward direction: define thrust vector
             self.thrust_vector = [self.acceleration * round(a_v) for a_v in
@@ -218,27 +194,7 @@ class Ship:
             # zip is a handy way to iterate over > 1 lists at the same time
             self.vel = [v + a for v, a in zip(self.vel, self.thrust_vector)]
 
-        # TODO: DONE Next, add code to the ship's update method to accelerate
-        """
-        the ship in the direction of this forward vector when the ship is
-        thrusting. You will need to update the velocity vector by a small
-        fraction of the forward acceleration vector so that the ship does not
-        accelerate too fast.
-        """
-
-        # TODO: Up to this point, your ship will never slow down.
-        """
-        Finally, add friction to the ship's update method as shown in the
-        "Acceleration and Friction" video by multiplying each component of
-        the velocity by a number slightly less than 1 during each update.
-        """
         self.vel = [self.friction * v for v in self.vel]
-
-        # TODO: DONE Add methods to the Ship class to increment and decrement
-        """
-        the angular velocity by a fixed amount.
-        (There is some flexibility in how you structure these methods.)
-        """
 
     def turn_cw(self):
         # updates angular velocity by a constant delta for clockwise
@@ -254,16 +210,11 @@ class Ship:
         :param is_thrusting: boolean, whether thrusters are on
         """
 
-        # TODO: DONE Add a method to the Ship class to turn the thrusters on/off
-        """
-        (you can make it take a Boolean argument which is True or False to
-        decide if they should be on or off).
-        """
         if is_thrusting:
-            self.thrust = True
+            self.thrust = True  # set object state variable for thrust
             self.thrust_counter += 1  # count how long thrusting
             try:
-                self.sound.play()
+                self.sound.play()  # if a sound is defined, play
             except AttributeError:
                 pass
         else:
@@ -277,16 +228,6 @@ class Ship:
                     self.sound.rewind()  # rewind only after 20 s (workaround)
                 except AttributeError:
                     pass
-        # TODO: DONE Modify the ship's thrust method to play the thrust sound when the
-        """thrust is on. Rewind the sound when the thrust turns off."""
-
-    # TODO: DONE Add a shoot method to your ship class. This should spawn a new
-    """
-    # missile (for now just replace the old missile in a_missile). The
-    missile's initial position should be the tip of your ship's "cannon".
-    Its velocity should be the sum of the ship's velocity and a multiple of
-    the ship's forward vector.
-    """
 
     def shoot(self):
         global a_missile
@@ -298,10 +239,7 @@ class Ship:
         missile_speed = 3  # multiplier to determine velocity vector
         missile_vel = [v + missile_speed * d for v, d in zip(self.vel, direction)]
 
-        # TODO: DONE Make sure that the missile sound is passed to the sprite
-        """
-        initializer so that the shooting sound is played    whenever you shoot a missile.
-        """
+        # reallocate missile Sprite
         a_missile = Sprite(missile_start, missile_vel, self.angle, 0,
                            missile_image, missile_info, missile_sound)
 
@@ -323,15 +261,6 @@ class Sprite:
         if sound:
             sound.rewind()
             sound.play()
-
-    # TODO: DONE Complete the Sprite class (as shown in the "Sprite class" video)
-    """
-    # by modifying the draw handler to draw the actual image and the update
-    handler to make the sprite move and rotate. Rocks do not accelerate or
-    experience friction, so the sprite update method should be simpler than
-    the ship update method. Test this by giving a_rock different starting
-    parameters and ensuring it behaves as you expect.
-    """
 
     def draw(self, canvas):
         canvas.draw_image(self.image, self.image_center, self.image_size,
@@ -378,21 +307,9 @@ def draw(canvas):
 # key handlers
 def keydown(key):
     """
-    Handler to react to key-down events
+    Handler to react to key-down events, i.e., up, left, right, space
     :param key: key pressed
     """
-
-    # TODO: The up arrow should control the thrusters of your spaceship.
-    """
-    The thrusters should be on when the up arrow is down and off when it is
-    up.
-    """
-
-    # TODO: DONE Make your ship turn in response to the left/right arrow keys.
-    """Add key-down and key-up handlers that check the left and right arrow keys."""
-
-    # TODO: DONE Modify the keydown handler to call this shoot method when the
-    """space-bar is pressed."""
 
     if key == simplegui.KEY_MAP["up"]:
         # True for update logic to use image with flames
@@ -434,23 +351,23 @@ def rock_spawner():
     """
     Function to generate asteroids (rocks)
     """
-    global a_rock
-    # TODO: DONE Implement the timer handler rock_spawner.
-    """
-    # In particular, set a_rock to be a new rock on every tick. (Don't
-    forget to declare a_rock as a global in the timer handler.) Choose a
-    velocity, position, and angular velocity randomly for the rock. You will
-    want to tweak the ranges of these random numbers, as that will affect
-    how fun the game is to play. Make sure you generated rocks that spin in
-    both directions and, likewise, move in all directions.
-    """
+    global a_rock  # global sprite object with asteroid image
+
+    # random asteroid position on canvas
     rock_pos = [random.randint(0, WIDTH), random.randint(0, HEIGHT)]
+
+    # random velocity
     # work around CodeSkulptor limitation to produce random fractions
     # normally would be random.uniform()...
-    rock_vel = [random.randrange(-5, 5), random.randrange(-5, 5)]
+    rock_vel = [random.randrange(-MAX_ROCK_VEL, MAX_ROCK_VEL),
+                random.randrange(-MAX_ROCK_VEL, MAX_ROCK_VEL)]
+
+    # random angular velocity
     # work around CodeSkulptor limitation to produce -Pi to Pi
     ang = random.randrange(-314, 314) / 100
     ang_vel = random.randrange(-4, 4) / 40
+
+    # reallocate a rock Sprite object
     a_rock = Sprite(rock_pos, rock_vel, ang, ang_vel, asteroid_image,
                     asteroid_info)
 
@@ -469,12 +386,8 @@ a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1, 1], 0, 0,
 # register handlers
 frame.set_draw_handler(draw)
 
-# TODO: DONE Call these methods in the keyboard handlers appropriately
-"""and verify that you can turn your ship as you expect."""
 frame.set_keydown_handler(keydown)
 frame.set_keyup_handler(keyup)
-
-# TODO: Modify the keyboard handlers to turn the ship's thrusters on/off.
 
 timer = simplegui.create_timer(1000.0, rock_spawner)
 
