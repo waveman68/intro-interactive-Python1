@@ -155,6 +155,37 @@ def group_collide(set_group, other_object):
     return return_boolean
 
 
+# TODO 4.1: Implement a final helper function group_group_collide that takes
+"""
+two groups of objects as input. group_group_collide should iterate through
+the elements of a copy of the first group using a for-loop and then call
+group_collide with each of these elements on the second group.
+group_group_collide should return the number of elements in the first group
+that collide with the second group as well as delete these elements in the
+first group. You may find the discard method for sets to be helpful here.
+"""
+
+
+def group_group_collide(group_1, group_2):
+    """
+    Takes 2 sets of sprite objects, and checks for and keeps track of
+    collisions between each element of group_1 with group_2 members. Returns
+    the number of collisions
+    :rtype: int
+    :type group_2: set
+    :type group_1: set
+    :param group_1: first set of objects to check for collisions
+    :param group_2: second set of objects to check for collisions
+    """
+    tally = 0
+    iterate_group_1 = group_1.copy()
+    for i in iterate_group_1:
+        if group_collide(group_2, i):
+            tally += 1
+            group_1.discard(i)
+    return tally
+
+
 # Ship class
 class Ship:
     def __init__(self, pos, vel, angle, image, info):
@@ -241,6 +272,12 @@ class Sprite:
             sound.rewind()
             sound.play()
 
+    def get_position(self):
+        return self.pos
+
+    def get_radius(self):
+        return self.radius
+
     def draw(self, canvas):
         canvas.draw_image(self.image, self.image_center, self.image_size,
                           self.pos, self.image_size, self.angle)
@@ -322,7 +359,7 @@ def click(pos):
 
 
 def draw(canvas):
-    global time, started
+    global lives, score, started, time
 
     # animiate background
     time += 1
@@ -370,6 +407,16 @@ def draw(canvas):
     that you could have negative lives at this point. Don't worry about that yet.
     """
     ship_collision = group_collide(rock_group, my_ship)
+    if ship_collision:
+        lives -= 1
+
+    # TODO 4.2: Call group_group_collide in the draw handler to detect
+    """
+    missile/rock collisions. Increment the score by the number of missile collisions.
+    """
+    missile_hits = group_group_collide(missile_group, rock_group)
+    if missile_hits > 0:
+        score += missile_hits
 
 
 # timer handler that spawns a rock
