@@ -120,9 +120,39 @@ This function should take a set and a canvas and call the update and draw
 methods for each sprite in the group.
 """
 def process_sprite_group(sprite_group, canvas):
-    for s in sprite_group:
-        s.draw(canvas)
-        s.update()
+    # TODO: DONE Modify process_sprite_group to check the return value of update for
+    """
+    sprites. If it returns True, remove the sprite from the group. Again, you
+    will want to iterate over a copy of the sprite group in process_sprite_group
+    to avoid deleting from the same set over which you are iterating.
+    """
+
+    iter_group = sprite_group.copy()
+    for i in iter_group:
+        i.draw(canvas)
+        expired = i.update()
+        if expired:
+            sprite_group.discard(i)
+
+
+def group_collide(set_group, other_object):
+    """
+    Takes a set of objects and determines collision with other_object.
+    If any collision in set occurs, the item is removed and true returned.
+    :rtype: bool
+    :type other_object: object
+    :type set_group: set
+    :param set_group: set of sprites, e.g., rocks or missiles
+    :param other_object: object to check for collision
+    """
+    return_boolean = False  # default return
+    iterate_group = set_group.copy()
+    for s in iterate_group:
+        if s.collide(other_object):
+            return_boolean = return_boolean or True  # return
+            set_group.remove(s)
+
+    return return_boolean
 
 
 # Ship class
@@ -137,6 +167,12 @@ class Ship:
         self.image_center = info.get_center()
         self.image_size = info.get_size()
         self.radius = info.get_radius()
+
+    def get_position(self):
+        return self.pos
+
+    def get_radius(self):
+        return self.radius
 
     def draw(self, canvas):
         if self.thrust:
@@ -180,11 +216,11 @@ class Ship:
         self.angle_vel -= .05
 
     def shoot(self):
-        global a_missile
+        global missile_group
         forward = angle_to_vector(self.angle)
         missile_pos = [self.pos[0] + self.radius * forward[0], self.pos[1] + self.radius * forward[1]]
         missile_vel = [self.vel[0] + 6 * forward[0], self.vel[1] + 6 * forward[1]]
-        a_missile = Sprite(missile_pos, missile_vel, self.angle, 0, missile_image, missile_info, missile_sound)
+        missile_group.add(Sprite(missile_pos, missile_vel, self.angle, 0, missile_image, missile_info, missile_sound))
 
 
 # Sprite class
@@ -211,12 +247,47 @@ class Sprite:
 
     def update(self):
         # update angle
+        """
+        Updates sprite and returns boolean concerning lifespan
+        :rtype: bool
+        :return: boolean, True if >= lifespan
+        """
         self.angle += self.angle_vel
 
         # update position
         self.pos[0] = (self.pos[0] + self.vel[0]) % WIDTH
         self.pos[1] = (self.pos[1] + self.vel[1]) % HEIGHT
 
+        # TODO: DONE In the update method of the Sprite class, increment the age of the
+        """
+        sprite every time update is called. If the age is greater than or equal to
+        the lifespan of the sprite, then we want to remove it. So, return False
+        (meaning we want to keep it) if the age is less than the lifespan and True
+        (meaning we want to remove it) otherwise.
+        """
+        if self.age is not None:
+            self.age += 1
+            if self.age >= self.lifespan:
+                return True
+        return False
+
+    # TODO: DONE Add a collide method to the Sprite class. This should take an
+    """
+    other_object as an argument and return True if there is a collision or False
+    otherwise. For now, this other object will always be your ship, but we want
+    to be able to use this collide method to detect collisions with missiles
+    later, as well. Collisions can be detected using the radius of the two
+    objects. This requires you to implement methods get_position and get_radius
+    on both the Sprite and Ship classes.
+    """
+
+    def collide(self, other_object):
+        other_pos = other_object.get_position()
+        other_rad = other_object.get_radius()
+        if dist(self.pos, other_pos) <= self.radius + other_rad:
+            return True
+        else:
+            return False
 
 # key handlers to control ship
 def keydown(key):
@@ -271,15 +342,21 @@ def draw(canvas):
 
     # draw/update ship and sprites
     my_ship.draw(canvas)
+
     # TODO DONE Call the process_sprite_group function on rock_group in the
     """draw handler."""
     process_sprite_group(rock_group, canvas)
-    a_missile.draw(canvas)
+
+    # TODO: DONE In the draw handler, use your helper function process_sprite_group
+    """
+    to process missile_group. While you can now shoot multiple missiles, you will
+    notice that they stick around forever. To fix this, we need to modify the
+    Sprite class and the process_sprite_group function.
+    """
+    process_sprite_group(missile_group, canvas)
 
     # update ship and sprites
     my_ship.update()
-
-    a_missile.update()
 
     # draw splash screen if not started
     if not started:
@@ -287,6 +364,12 @@ def draw(canvas):
                           splash_info.get_size(), [WIDTH / 2, HEIGHT / 2],
                           splash_info.get_size())
 
+    # TODO: In the draw handler, use the group_collide helper to determine if the
+    """
+    ship hit any of the rocks. If so, decrease the number of lives by one. Note
+    that you could have negative lives at this point. Don't worry about that yet.
+    """
+    ship_collision = group_collide(rock_group, my_ship)
 
 
 # timer handler that spawns a rock
@@ -315,9 +398,21 @@ frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
 
 # initialize ship and two sprites
 my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info)
+
 rock_group = set([])
-rock_group.add(Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, .1, asteroid_image, asteroid_info))
-a_missile = Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1, 1], 0, 0, missile_image, missile_info, missile_sound)
+rock_spawner()
+
+missile_group = set([])
+
+# TODO: DONE Remove a_missile and replace it with missile_group.
+"""
+Initialize the missile group to an empty set.  Modify your shoot method of
+my_ship to create a new missile (an instance of the Sprite class) and add
+it to the missile_group. If you use our code, the firing sound should play
+automatically each time a missile is spawned.
+"""
+
+
 
 # register handlers
 frame.set_keyup_handler(keyup)
