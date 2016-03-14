@@ -16,6 +16,7 @@ except ImportError:
     import SimpleGUICS2Pygame.codeskulptor_lib as codeskulptor_lib
     import SimpleGUICS2Pygame.simplegui_lib as simplegui_lib
 
+
 # globals for user interface
 WIDTH = 800
 HEIGHT = 600
@@ -139,7 +140,9 @@ sprites in the group to accomplish this task.
 
 def group_collide(set_group, other_object):
     """
-    Takes a set of objects and determines collision with other_object
+    Takes a set of objects and determines collision with other_object.
+    If any collision in set occurs, the item is removed and true returned.
+    :rtype: bool
     :type other_object: object
     :type set_group: set
     :param set_group: set of sprites, e.g., rocks or missiles
@@ -148,8 +151,9 @@ def group_collide(set_group, other_object):
     return_boolean = False  # default return
     iterate_group = set_group.copy()
     for s in iterate_group:
-        return_boolean = return_boolean and s.collide(other_object)
-        set_group.remove(s)
+        if s.collide(other_object):
+            return_boolean = return_boolean or True  # return
+            set_group.remove(s)
 
     return return_boolean
 
@@ -268,9 +272,9 @@ class Sprite:
     on both the Sprite and Ship classes.
     """
     def collide(self, other_object):
-        other_pos = other_object.get_position
-        other_rad = other_object.get_radius
-        if dist(self.other_object, other_pos) <= self.radius + other_rad:
+        other_pos = other_object.get_position()
+        other_rad = other_object.get_radius()
+        if dist(self.pos, other_pos) <= self.radius + other_rad:
             return True
         else:
             return False
