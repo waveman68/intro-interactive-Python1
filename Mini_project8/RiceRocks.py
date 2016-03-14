@@ -124,6 +124,35 @@ def process_sprite_group(sprite_group, canvas):
         s.draw(canvas)
         s.update()
 
+# TODO: DONE Implement a group_collide helper function.
+"""
+This function should take a set group and a sprite other_object and check for
+collisions between other_object and elements of the group. If there is a
+collision, the colliding object should be removed from the group. To avoid
+removing an object from a set that you are iterating over (which can cause
+you a serious debugging headache), iterate over a copy of the set created via
+set(group). This function should return True or False depending on whether
+there was a collision. Be sure to use the collide method from part 1 on the
+sprites in the group to accomplish this task.
+"""
+
+
+def group_collide(set_group, other_object):
+    """
+    Takes a set of objects and determines collision with other_object
+    :type other_object: object
+    :type set_group: set
+    :param set_group: set of sprites, e.g., rocks or missiles
+    :param other_object: object to check for collision
+    """
+    return_boolean = False  # default return
+    iterate_group = set_group.copy()
+    for s in iterate_group:
+        return_boolean = return_boolean and s.collide(other_object)
+        set_group.remove(s)
+
+    return return_boolean
+
 
 # Ship class
 class Ship:
@@ -137,6 +166,12 @@ class Ship:
         self.image_center = info.get_center()
         self.image_size = info.get_size()
         self.radius = info.get_radius()
+
+    def get_position(self):
+        return self.pos
+
+    def get_radius(self):
+        return self.radius
 
     def draw(self, canvas):
         if self.thrust:
@@ -205,6 +240,12 @@ class Sprite:
             sound.rewind()
             sound.play()
 
+    def get_position(self):
+        return self.pos
+
+    def get_radius(self):
+        return self.radius
+
     def draw(self, canvas):
         canvas.draw_image(self.image, self.image_center, self.image_size,
                           self.pos, self.image_size, self.angle)
@@ -216,6 +257,25 @@ class Sprite:
         # update position
         self.pos[0] = (self.pos[0] + self.vel[0]) % WIDTH
         self.pos[1] = (self.pos[1] + self.vel[1]) % HEIGHT
+
+    # TODO: DONE Add a collide method to the Sprite class. This should take an
+    """
+    other_object as an argument and return True if there is a collision or False
+    otherwise. For now, this other object will always be your ship, but we want
+    to be able to use this collide method to detect collisions with missiles
+    later, as well. Collisions can be detected using the radius of the two
+    objects. This requires you to implement methods get_position and get_radius
+    on both the Sprite and Ship classes.
+    """
+    def collide(self, other_object):
+        other_pos = other_object.get_position
+        other_rad = other_object.get_radius
+        if dist(self.other_object, other_pos) <= self.radius + other_rad:
+            return True
+        else:
+            return False
+
+
 
 
 # key handlers to control ship
@@ -287,6 +347,12 @@ def draw(canvas):
                           splash_info.get_size(), [WIDTH / 2, HEIGHT / 2],
                           splash_info.get_size())
 
+    # TODO: In the draw handler, use the group_collide helper to determine if the
+    """
+    ship hit any of the rocks. If so, decrease the number of lives by one. Note
+    that you could have negative lives at this point. Don't worry about that yet.
+    """
+    ship_collision = group_collide(rock_group, my_ship)
 
 
 # timer handler that spawns a rock
