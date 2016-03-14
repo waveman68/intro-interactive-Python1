@@ -139,7 +139,7 @@ class Ship:
         self.pos = [pos[0], pos[1]]
         self.vel = [vel[0], vel[1]]
         self.thrust = False  # thrusters off
-        self.thrust_vec = [0, 0]  # initialize with no thrust
+        self.thrust_vec = [0.0, 0.0]  # initialize with no thrust
         self.thrust_counter = 0  # initialize counter for sound workaround
         self.acceleration = 0.2  # acceleration when thrusting
         self.angle = angle
@@ -187,12 +187,12 @@ class Ship:
         # thrust along ship's forward direction
         if self.thrust:
             # accelerate along forward direction: define thrust vector
-            self.thrust_vector = [self.acceleration * round(a_v) for a_v in
-                                  angle_to_vector(self.angle)]
+            self.thrust_vec = [self.acceleration * round(a_v) for a_v in
+                               angle_to_vector(self.angle)]
 
             # update the velocity vector change by the thrust vector
             # zip is a handy way to iterate over > 1 lists at the same time
-            self.vel = [v + a for v, a in zip(self.vel, self.thrust_vector)]
+            self.vel = [v + a for v, a in zip(self.vel, self.thrust_vec)]
 
         self.vel = [self.friction * v for v in self.vel]
 
@@ -365,7 +365,7 @@ def rock_spawner():
     # random angular velocity
     # work around CodeSkulptor limitation to produce -Pi to Pi
     ang = random.randrange(-314, 314) / 100
-    ang_vel = random.randrange(-4, 4) / 40
+    ang_vel = random.randrange(-4, 4) / 40.0
 
     # reallocate a rock Sprite object
     a_rock = Sprite(rock_pos, rock_vel, ang, ang_vel, asteroid_image,
