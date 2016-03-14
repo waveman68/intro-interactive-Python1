@@ -114,13 +114,15 @@ def dist(p, q):
     return math.sqrt((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2)
 
 
-# TODO DONE Create a helper function process_sprite_group.
+# TODO 1.3: DONE Create a helper function process_sprite_group.
 """
 This function should take a set and a canvas and call the update and draw
 methods for each sprite in the group.
 """
+
+
 def process_sprite_group(sprite_group, canvas):
-    # TODO: DONE Modify process_sprite_group to check the return value of update for
+    # TODO 3.4: DONE Modify process_sprite_group to check the return value of update for
     """
     sprites. If it returns True, remove the sprite from the group. Again, you
     will want to iterate over a copy of the sprite group in process_sprite_group
@@ -241,10 +243,12 @@ class Ship:
             ship_thrust_sound.pause()
 
     def increment_angle_vel(self):
-        self.angle_vel += .05
+        # TODO 5.5: DONE Tweak any constants that you have to make the game play
+        """the way you want."""
+        self.angle_vel += .04
 
     def decrement_angle_vel(self):
-        self.angle_vel -= .05
+        self.angle_vel -= .04
 
     def shoot(self):
         global missile_group
@@ -295,7 +299,7 @@ class Sprite:
         self.pos[0] = (self.pos[0] + self.vel[0]) % WIDTH
         self.pos[1] = (self.pos[1] + self.vel[1]) % HEIGHT
 
-        # TODO: DONE In the update method of the Sprite class, increment the age of the
+        # TODO 3.3: DONE In the update method of the Sprite class, increment the age of the
         """
         sprite every time update is called. If the age is greater than or equal to
         the lifespan of the sprite, then we want to remove it. So, return False
@@ -308,7 +312,7 @@ class Sprite:
                 return True
         return False
 
-    # TODO: DONE Add a collide method to the Sprite class. This should take an
+    # TODO 2.1: DONE Add a collide method to the Sprite class. This should take an
     """
     other_object as an argument and return True if there is a collision or False
     otherwise. For now, this other object will always be your ship, but we want
@@ -325,6 +329,7 @@ class Sprite:
             return True
         else:
             return False
+
 
 # key handlers to control ship
 def keydown(key):
@@ -349,13 +354,23 @@ def keyup(key):
 
 # mouseclick handlers that reset UI and conditions whether splash image is drawn
 def click(pos):
-    global started
+    global lives, score, started
     center = [WIDTH / 2, HEIGHT / 2]
     size = splash_info.get_size()
     inwidth = (center[0] - size[0] / 2) < pos[0] < (center[0] + size[0] / 2)
     inheight = (center[1] - size[1] / 2) < pos[1] < (center[1] + size[1] / 2)
+
+    # TODO 5.2 DONE When the game starts/restarts, make sure the lives and the
+    """
+    score are properly initialized. Start spawning rocks. Play/restart the
+    background music loaded in the variable soundtrack in the program template.
+    """
     if (not started) and inwidth and inheight:
         started = True
+        lives = 3
+        score = 0
+        soundtrack.rewind()
+        soundtrack.play()
 
 
 def draw(canvas):
@@ -380,11 +395,11 @@ def draw(canvas):
     # draw/update ship and sprites
     my_ship.draw(canvas)
 
-    # TODO DONE Call the process_sprite_group function on rock_group in the
+    # TODO 1.4: DONE Call the process_sprite_group function on rock_group in the
     """draw handler."""
     process_sprite_group(rock_group, canvas)
 
-    # TODO: DONE In the draw handler, use your helper function process_sprite_group
+    # TODO 3.2: DONE In the draw handler, use your helper function process_sprite_group
     """
     to process missile_group. While you can now shoot multiple missiles, you will
     notice that they stick around forever. To fix this, we need to modify the
@@ -395,13 +410,7 @@ def draw(canvas):
     # update ship and sprites
     my_ship.update()
 
-    # draw splash screen if not started
-    if not started:
-        canvas.draw_image(splash_image, splash_info.get_center(),
-                          splash_info.get_size(), [WIDTH / 2, HEIGHT / 2],
-                          splash_info.get_size())
-
-    # TODO: In the draw handler, use the group_collide helper to determine if the
+    # TODO 2.3: In the draw handler, use the group_collide helper to determine if the
     """
     ship hit any of the rocks. If so, decrease the number of lives by one. Note
     that you could have negative lives at this point. Don't worry about that yet.
@@ -418,22 +427,61 @@ def draw(canvas):
     if missile_hits > 0:
         score += missile_hits
 
+    # TODO 5.1: DONE Add code to the draw handler such that, if the number of
+    """
+    lives becomes 0, the game is reset and the splash screen appears. In
+    particular, set the flag started to False, destroy all rocks and prevent
+    any more rocks for spawning until the game is restarted.
+    """
+
+    # the soundtrack is 3:04 minutes long, so rewind/replay at 3 min.
+    if time % 360 == 0:
+        soundtrack.pause()
+        soundtrack.rewind()
+        soundtrack.play()
+
+    if lives <= 0:
+        started = False
+        rg_copy = rock_group.copy()
+        for r in rg_copy:
+            rock_group.discard(r)
+
+    # draw splash screen if not started
+    if not started:
+        canvas.draw_image(splash_image, splash_info.get_center(),
+                          splash_info.get_size(), [WIDTH / 2, HEIGHT / 2],
+                          splash_info.get_size())
+
 
 # timer handler that spawns a rock
 def rock_spawner():
     global rock_group
 
     rock_pos = [random.randrange(0, WIDTH), random.randrange(0, HEIGHT)]
-    rock_vel = [random.random() * .6 - .3, random.random() * .6 - .3]
+    rock_vel = [0.0, 0.0]
+    # TODO 5.4: DONE Experiment with varying the velocity of rocks based on the
+    """score to make game play more difficult as the game progresses."""
+    for i in range(len(rock_vel)):
+        rock_vel[i] = (random.random() * .6 - .3) * (1 + score / 100)
     rock_avel = random.random() * .2 - .1
-    # TODO DONE Remove a_rock and replace it with rock_group.
+
+    # TODO 5.3: DONE When you spawn rocks, you want to make sure they are some
+    """
+    distance away from the ship. Otherwise, you can die when a rock spawns on
+    top of you, which isn't much fun. One simple way to achieve this effect
+    to ignore a rock spawn event if the spawned rock is too close to the ship.
+    """
+    dist_to_ship = dist(my_ship.get_position(), rock_pos)
+
+    # TODO 1.1: DONE Remove a_rock and replace it with rock_group.
     """
     Initialize the rock group to an empty set. Modify your rock spawner to
     create a new rock (an instance of a Sprite object) and add it to rock_group.
     """
-    if len(rock_group) < 12:
+    if len(rock_group) < 12 and started and dist_to_ship > 90:
         rock_group.add(Sprite(rock_pos, rock_vel, 0, rock_avel, asteroid_image, asteroid_info))
-    # TODO DONE Modify your rock spawner to limit the total number of rocks in the
+
+    # TODO 1.2: DONE Modify your rock spawner to limit the total number of rocks in the
     """
     game at any one time. We suggest you limit it to 12. With too many rocks
     the game becomes less fun and the animation slows down significantly.
@@ -451,15 +499,13 @@ rock_spawner()
 
 missile_group = set([])
 
-# TODO: DONE Remove a_missile and replace it with missile_group.
+# TODO 3.1: DONE Remove a_missile and replace it with missile_group.
 """
 Initialize the missile group to an empty set.  Modify your shoot method of
 my_ship to create a new missile (an instance of the Sprite class) and add
 it to the missile_group. If you use our code, the firing sound should play
 automatically each time a missile is spawned.
 """
-
-
 
 # register handlers
 frame.set_keyup_handler(keyup)
