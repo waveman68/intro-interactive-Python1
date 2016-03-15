@@ -127,6 +127,8 @@ def process_sprite_group(sprite_group, canvas):
     sprites. If it returns True, remove the sprite from the group. Again, you
     will want to iterate over a copy of the sprite group in process_sprite_group
     to avoid deleting from the same set over which you are iterating.
+    :param canvas: canvas object to draw in
+    :param sprite_group: group of sprites (e.g., rocks, missiles or explosions)
     """
 
     iter_group = sprite_group.copy()
@@ -154,8 +156,20 @@ def group_collide(set_group, other_object):
             return_boolean = return_boolean or True  # return
             set_group.remove(s)
 
-    return return_boolean
+            # TODO 6.3: DONE In group_collide, if there is a collision,
+            """
+            create a new explosion (an instance of the Sprite class) and add
+            it to the explosion_group. Make sure that each explosion plays
+            the explosion sound.
+            """
+            # let explosion have [0.0, 0.0] velocity & 0 angular velocity
+            explosion_group.add(Sprite(s.get_position(), [0.0, 0.0],
+                                       0, 0, explosion_image,
+                                       explosion_info))
+            explosion_sound.rewind()
+            explosion_sound.play()
 
+    return return_boolean
 
 # TODO 4.1: Implement a final helper function group_group_collide that takes
 """
@@ -218,6 +232,7 @@ class Ship:
             # canvas.draw_circle(self.pos, self.radius, 1, "White", "White")
 
     def update(self):
+        global lives
         # update angle
         self.angle += self.angle_vel
 
@@ -233,6 +248,18 @@ class Ship:
 
         self.vel[0] *= .99
         self.vel[1] *= .99
+
+    def reset(self):
+        """
+        Method puts ship back to screen middle with no velocity or rotation
+        """
+        self.pos[0] = int(WIDTH / 2)
+        self.pos[1] = int(HEIGHT / 2)
+        self.vel[0] = 0.0
+        self.vel[1] = 0.0
+        self.thrust = False
+        self.angle = 0
+        self.angle_vel = 0
 
     def set_thrust(self, on):
         self.thrust = on
@@ -283,7 +310,19 @@ class Sprite:
         return self.radius
 
     def draw(self, canvas):
-        canvas.draw_image(self.image, self.image_center, self.image_size,
+        # TODO 6.1: DONE In the draw method of the Sprite class, check if self.animated is
+        """
+        True. If so, then choose the correct tile in the image based on the age. The
+        image is tiled horizontally. If self.animated is False, it should continue to
+        draw the sprite as before.
+        """
+
+        animated_center = self.image_center[:]
+        # if animated, assume tiled and advance through tiles based on age
+        if self.animated:
+            animated_center[0] = self.image_center[0] + (self.image_size[0]
+                                                         * self.age)
+        canvas.draw_image(self.image, animated_center, self.image_size,
                           self.pos, self.image_size, self.angle)
 
     def update(self):
@@ -369,8 +408,6 @@ def click(pos):
         started = True
         lives = 3
         score = 0
-        soundtrack.rewind()
-        soundtrack.play()
 
 
 def draw(canvas):
@@ -407,6 +444,10 @@ def draw(canvas):
     """
     process_sprite_group(missile_group, canvas)
 
+    # TODO 6.4: DONE In the draw handler, use process_sprite_group to process
+    """explosion_group."""
+    process_sprite_group(explosion_group, canvas)
+
     # update ship and sprites
     my_ship.update()
 
@@ -442,6 +483,7 @@ def draw(canvas):
 
     if lives <= 0:
         started = False
+        my_ship.reset()  # ship back to starting position
         rg_copy = rock_group.copy()
         for r in rg_copy:
             rock_group.discard(r)
@@ -499,6 +541,10 @@ rock_spawner()
 
 missile_group = set([])
 
+# TODO 6.2: DONE Create an explosion_group global variable and initialize it to an
+"""empty set."""
+explosion_group = set([])
+
 # TODO 3.1: DONE Remove a_missile and replace it with missile_group.
 """
 Initialize the missile group to an empty set.  Modify your shoot method of
@@ -518,3 +564,51 @@ timer = simplegui.create_timer(1000.0, rock_spawner)
 # get things rolling
 timer.start()
 frame.start()
+
+# Grading rubric - 13 pts (scaled to 100 pts)
+# -------------------------------------------
+# 1 pt - The program spawns multiple rocks.
+# CHECK
+
+# 1 pt - The program correctly determines whether the ship collides with a
+# rock.
+# CHECK
+
+# 1 pt - The program removes a rock when the ship collides with a rock.
+# CHECK
+
+# 1 pt - The number of lives decreases by one when the ship collides with a
+# rock.
+# CHECK
+
+# 1 pt - The program spawns multiple missiles.
+# CHECK
+
+# 1 pt - The program plays the firing sound when each missile is spawned.
+# CHECK
+
+# 1 pt - The program removes a missile that does not collide with a rock
+# after some fixed time period.
+# CHECK
+
+# 1 pt - The program correctly determines whether a missile and a rock
+# collide.
+# CHECK
+
+# 1 pt - The program removes missiles and rocks that collide.
+# CHECK
+
+# 1 pt - The score is updated appropriately after missile/rock collisions.
+# CHECK
+
+# 1 pt - When the lives go to zero, the splash screen reappears and all rocks
+# are removed.
+# CHECK
+
+# 1 pt - When the splash screen is clicked, the lives are reset to 3, score
+# is reset to zero and the background music restarts.
+# CHECK
+
+# 1 pt - The game spawns rocks only when the splash screen is not visible and
+# a game is in progress.
+# CHECK
